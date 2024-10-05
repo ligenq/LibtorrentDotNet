@@ -33,16 +33,14 @@ class Program
         {
             torrentSession.TorrentStateUpdated += (sender, torrentStateUpdateEventArgs) =>
             {
-                foreach (var status in torrentStateUpdateEventArgs.UpdatedTorrents)
+                var status = torrentStateUpdateEventArgs.UpdatedTorrents[0];
+                if (status.State == TorrentState.Downloading)
                 {
-                    if (status.State == TorrentState.Downloading)
-                    {
-                        Console.WriteLine($"Downloading: {Math.Round(status.Progress * 100, 2)}%");
-                    }
-                    else
-                    {
-                        Console.WriteLine(status.State);
-                    }
+                    Console.WriteLine($"Downloading torrent: {Math.Round(status.Progress * 100, 2)}%");
+                }
+                else
+                {
+                    Console.WriteLine(status.State);
                 }
             };
 
