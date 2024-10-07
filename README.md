@@ -58,6 +58,21 @@ class Program
 - .NET 8
 - Windows 10 and later, x64 only
 
+## Building
+
+Before building the solution, ensure that you have the following installed:
+
+- [vcpkg](https://vcpkg.io/en/)
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- Visual Studio 2022 (or your preferred IDE) with the following components:
+  - .NET desktop development workload
+  - Desktop development with C++ workload
+  - C++/CLI support for v143 build tools
+
+1. Install the libtorrent library using vcpkg
+2. Clone this repository
+3. Build the solution
+
 ## Dependencies
 
 This project uses the following third-party library:
