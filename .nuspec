@@ -1,29 +1,32 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
-  <metadata>
-    <id>LibtorrentDotNet</id>
-    <version>1.0.0</version>
-    <authors>ligenq</authors>
-    <owners>ligenq</owners>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>A C++/CLI .Net wrapper for libtorrent.</description>
-    <readme>libtorrent\README.md</readme>
-    <icon>images\icon.png</icon>
-    <releaseNotes>Initial release</releaseNotes>
-    <tags>cppcli cpluspluscli managedwrapper libtorrent torrent</tags>
-    <dependencies>
-      <group targetFramework="net8.0">
-      </group>
-    </dependencies>
-  </metadata>
-  <files>
-    <file src="x64\Release\LibtorrentDotNet.dll" target="lib\net8.0\" />
-    <file src="x64\Release\Ijwhost.dll" target="runtimes\win-x64\native" />
-    <file src="x64\Release\libcrypto-3-x64.dll" target="runtimes\win-x64\native" />
-    <file src="x64\Release\libssl-3-x64.dll" target="runtimes\win-x64\native" />
-    <file src="x64\Release\torrent-rasterbar.dll" target="runtimes\win-x64\native" />
-    <file src="LICENSE" target="libtorrent\LICENSE" />
-    <file src="README.md" target="libtorrent\README.md" />
-    <file src="icon.png" target="images\" />
-  </files>
+	<metadata>
+		<id>LibtorrentDotNet</id>
+		<version>1.0.0</version>
+		<authors>ligenq</authors>
+		<owners>ligenq</owners>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>A C++/CLI .Net wrapper for libtorrent.</description>
+		<readme>libtorrent\README.md</readme>
+		<icon>images\icon.png</icon>
+		<releaseNotes>Initial release</releaseNotes>
+		<license type="file">libtorrent\LICENSE.txt</license>
+		<projectUrl>https://github.com/ligenq/LibtorrentDotNet</projectUrl>
+		<repository type="git" url="https://github.com/ligenq/LibtorrentDotNet" />
+		<tags>cppcli cpluspluscli managedwrapper libtorrent torrent</tags>
+		<dependencies>
+			<group targetFramework="net8.0">
+			</group>
+		</dependencies>
+	</metadata>
+	<files>
+		<file src="x64\Release\LibtorrentDotNet.dll" target="lib\net8.0\" />
+		<file src="x64\Release\Ijwhost.dll" target="runtimes\win-x64\native" />
+		<file src="x64\Release\libcrypto-3-x64.dll" target="runtimes\win-x64\native" />
+		<file src="x64\Release\libssl-3-x64.dll" target="runtimes\win-x64\native" />
+		<file src="x64\Release\torrent-rasterbar.dll" target="runtimes\win-x64\native" />
+		<file src="LICENSE.txt" target="libtorrent\LICENSE.txt" />
+		<file src="README.md" target="libtorrent\README.md" />
+		<file src="icon.png" target="images\" />
+	</files>
 </package>
