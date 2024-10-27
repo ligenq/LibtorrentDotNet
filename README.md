@@ -1,3 +1,5 @@
+![localImage](./icon_small.png)
+
 # LibtorrentDotNet
 
 ## Overview
