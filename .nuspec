@@ -21,10 +21,11 @@
 	</metadata>
 	<files>
 		<file src="x64\Release\LibtorrentDotNet.dll" target="lib\net8.0\" />
-		<file src="x64\Release\Ijwhost.dll" target="runtimes\win-x64\native" />
-		<file src="x64\Release\libcrypto-3-x64.dll" target="runtimes\win-x64\native" />
-		<file src="x64\Release\libssl-3-x64.dll" target="runtimes\win-x64\native" />
-		<file src="x64\Release\torrent-rasterbar.dll" target="runtimes\win-x64\native" />
+		<file src="x64\Release\LibtorrentDotNet.xml" target="lib\net8.0\" />
+		<file src="x64\Release\Ijwhost.dll" target="lib\net8.0\" />
+		<file src="x64\Release\libcrypto-3-x64.dll" target="lib\net8.0\" />
+		<file src="x64\Release\libssl-3-x64.dll" target="lib\net8.0\" />
+		<file src="x64\Release\torrent-rasterbar.dll" target="lib\net8.0\" />
 		<file src="LICENSE.txt" target="libtorrent\LICENSE.txt" />
 		<file src="README.md" target="libtorrent\README.md" />
 		<file src="icon.png" target="images\" />

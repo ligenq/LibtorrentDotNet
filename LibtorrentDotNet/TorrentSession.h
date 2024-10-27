@@ -148,7 +148,7 @@ namespace LibtorrentDotNet
 		/// Changes the interval at which events are raised. The default interval is once every second.
 		/// Adjusting this interval can increase or decrease the frequency of event invocations, which may impact performance.
 		/// </summary>
-		/// <param name="interval">The new interval to use, specified as a <see cref="interval"/>. The interval represents the duration between consecutive events.</param>
+		/// <param name="interval">The new interval to use. The interval represents the duration between consecutive events.</param>
 		/// <remarks>Use caution when setting very short intervals, as it may result in a high frequency of events.</remarks>
 		virtual void ChangeEventTimerInterval(TimeSpan interval);
 
@@ -660,7 +660,7 @@ namespace LibtorrentDotNet
 				lock->ExitReadLock();
 			}
 
-			auto statuses = gcnew List<TorrentStatus^>(handles.size());
+			auto statuses = gcnew List<TorrentStatus^>((long)handles.size());
 
 			for (const auto& handle : handles)
 			{
@@ -694,7 +694,7 @@ namespace LibtorrentDotNet
 				lock->ExitReadLock();
 			}
 
-			auto torrents = gcnew List<TorrentInfo^>(handles.size());
+			auto torrents = gcnew List<TorrentInfo^>((long)handles.size());
 
 			for (const auto& handle : handles)
 			{
@@ -959,11 +959,11 @@ namespace LibtorrentDotNet
 
 			if (const auto& hashStr = context.marshal_as<std::string>(torrentId->ToString()); hashStr.length() == 40 || hashStr.length() == 64)
 			{
-				const int hashSize = hashStr.length() / 2;
+				const size_t hashSize = hashStr.length() / 2;
 				std::vector<char> hashBytes(hashSize);
 				for (int i = 0; i < hashSize; i++)
 				{
-					hashBytes[i] = static_cast<char>(std::stoi(hashStr.substr(i * 2, 2), nullptr, 16));
+					hashBytes[i] = static_cast<char>(std::stoi(hashStr.substr(static_cast<std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type>(i) * 2, 2), nullptr, 16));
 				}
 
 				if (hashStr.length() == 40)
@@ -1039,6 +1039,7 @@ namespace LibtorrentDotNet
 			TorrentId^ torrentId = InfoHashToTorrentId(handle.info_hashes());
 			const auto& status = handle.status();
 			auto name = gcnew String(status.name.c_str());
+			auto savePath = gcnew String(status.save_path.c_str());
 			TorrentStatus^ managedStatus = CreateTorrentStatus(status, torrentId);
 			UInt64 totalSize = 0;
 
@@ -1064,7 +1065,7 @@ namespace LibtorrentDotNet
 				files = gcnew List<TorrentFile^>(0);
 			}
 
-			return gcnew TorrentInfo(torrentId, name, managedStatus, files, totalSize);
+			return gcnew TorrentInfo(torrentId, name, managedStatus, files, totalSize, savePath);
 		}
 
 		void OnAlertTimerElapsed(Object^ sender, ElapsedEventArgs^ e)
@@ -1130,7 +1131,7 @@ namespace LibtorrentDotNet
 				}
 				else if (const auto* stateAlert = libtorrent::alert_cast<libtorrent::state_update_alert>(alert))
 				{
-					auto torrentStats = gcnew List<TorrentStatus^>(stateAlert->status.size());
+					auto torrentStats = gcnew List<TorrentStatus^>((long)stateAlert->status.size());
 
 					for (const auto& status : stateAlert->status)
 					{

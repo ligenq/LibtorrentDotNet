@@ -22,7 +22,7 @@ namespace LibtorrentDotNet
         /// <summary>
         /// Gets the ID of the torrent associated with this event.
         /// </summary>
-        property TorrentId^ InfoHash { TorrentId^ get() { return torrentId; } }
+        property TorrentId^ Id { TorrentId^ get() { return torrentId; } }
 
         /// <summary>
         /// Gets the type of operation that occurred.
@@ -46,7 +46,7 @@ namespace LibtorrentDotNet
         /// <summary>
         /// Gets the ID of the torrent associated with this error.
         /// </summary>
-        property TorrentId^ InfoHash { TorrentId^ get() { return torrentId; } }
+        property TorrentId^ Id { TorrentId^ get() { return torrentId; } }
 
         /// <summary>
         /// Gets the error message.
