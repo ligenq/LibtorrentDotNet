@@ -23,14 +23,14 @@ namespace LibtorrentDotNet
 		/// <param name="status">The current status of the torrent.</param>
 		/// <param name="torrentFiles">A list of files in the torrent.</param>
 		/// <param name="totalSize">The total size of all files in the torrent, in bytes.</param>
-		/// <param name="totalSize">The path to where the downloaded torrent file(s) are saved.</param>
+		/// <param name="savePath">The path to where the downloaded torrent file(s) are saved.</param>
 		TorrentInfo(
 			TorrentId^ torrentId,
 			String^ name,
 			TorrentStatus^ status,
 			IReadOnlyList<TorrentFile^>^ torrentFiles,
 			const Int64 totalSize,
-			String^ savePath) : torrentId(torrentId), name(name), status(status), torrentFiles(torrentFiles), totalSize(totalSize), savePath(savePath) {}
+			String^ savePath) : torrentId(torrentId), name(name), savePath(savePath), status(status), torrentFiles(torrentFiles), totalSize(totalSize) {}
 
 		/// <summary>
 		/// Gets the unique identifier of the torrent.
@@ -68,6 +68,6 @@ namespace LibtorrentDotNet
 		String^ savePath;
 		TorrentStatus^ status;
 		IReadOnlyList<TorrentFile^>^ torrentFiles;
-		System::Int64 totalSize;
+		Int64 totalSize;
 	};
 }

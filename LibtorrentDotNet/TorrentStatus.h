@@ -51,42 +51,42 @@ namespace LibtorrentDotNet
 		/// <summary>
 		/// Gets the current state of the torrent.
 		/// </summary>
-		property TorrentState State { TorrentState get() { return state; } };
+		property TorrentState State { TorrentState get() { return state; } }
 
 		/// <summary>
 		/// Gets the download progress of the torrent (0.0 to 1.0).
 		/// </summary>
-		property double Progress { double get() { return progress; } };
+		property double Progress { double get() { return progress; } }
 
 		/// <summary>
 		/// Gets the total number of bytes downloaded.
 		/// </summary>
-		property Int64 TotalDownload { Int64 get() { return totalDownload; } };
+		property Int64 TotalDownload { Int64 get() { return totalDownload; } }
 
 		/// <summary>
 		/// Gets the total number of bytes uploaded.
 		/// </summary>
-		property Int64 TotalUpload { Int64 get() { return totalUpload; } };
+		property Int64 TotalUpload { Int64 get() { return totalUpload; } }
 
 		/// <summary>
 		/// Gets the current download rate in bytes per second.
 		/// </summary>
-		property int DownloadRate { int get() { return downloadRate; } };
+		property int DownloadRate { int get() { return downloadRate; } }
 
 		/// <summary>
 		/// Gets the current upload rate in bytes per second.
 		/// </summary>
-		property int UploadRate { int get() { return uploadRate; } };
+		property int UploadRate { int get() { return uploadRate; } }
 
 		/// <summary>
 		/// Gets the number of peers connected to.
 		/// </summary>
-		property int NumPeers { int get() { return numPeers; } };
+		property int NumPeers { int get() { return numPeers; } }
 
 		/// <summary>
 		/// Gets the number of seeds connected to.
 		/// </summary>
-		property int NumSeeds { int get() { return numSeeds; } };
+		property int NumSeeds { int get() { return numSeeds; } }
 
 	private:
 		TorrentId^ torrentId;

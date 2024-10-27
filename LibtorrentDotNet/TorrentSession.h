@@ -660,7 +660,7 @@ namespace LibtorrentDotNet
 				lock->ExitReadLock();
 			}
 
-			auto statuses = gcnew List<TorrentStatus^>((long)handles.size());
+			auto statuses = gcnew List<TorrentStatus^>(static_cast<long>(handles.size()));
 
 			for (const auto& handle : handles)
 			{
@@ -694,7 +694,7 @@ namespace LibtorrentDotNet
 				lock->ExitReadLock();
 			}
 
-			auto torrents = gcnew List<TorrentInfo^>((long)handles.size());
+			auto torrents = gcnew List<TorrentInfo^>(static_cast<long>(handles.size()));
 
 			for (const auto& handle : handles)
 			{
@@ -963,7 +963,7 @@ namespace LibtorrentDotNet
 				std::vector<char> hashBytes(hashSize);
 				for (int i = 0; i < hashSize; i++)
 				{
-					hashBytes[i] = static_cast<char>(std::stoi(hashStr.substr(static_cast<std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type>(i) * 2, 2), nullptr, 16));
+					hashBytes[i] = static_cast<char>(std::stoi(hashStr.substr(static_cast<std::basic_string<char>::size_type>(i) * 2, 2), nullptr, 16));
 				}
 
 				if (hashStr.length() == 40)
@@ -1131,7 +1131,7 @@ namespace LibtorrentDotNet
 				}
 				else if (const auto* stateAlert = libtorrent::alert_cast<libtorrent::state_update_alert>(alert))
 				{
-					auto torrentStats = gcnew List<TorrentStatus^>((long)stateAlert->status.size());
+					auto torrentStats = gcnew List<TorrentStatus^>(static_cast<long>(stateAlert->status.size()));
 
 					for (const auto& status : stateAlert->status)
 					{
