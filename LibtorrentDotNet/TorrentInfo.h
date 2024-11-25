@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TorrentFile.h"
+#include "TorrentFileEntry.h"
 #include "TorrentId.h"
 #include "TorrentStatus.h"
 
@@ -21,16 +21,16 @@ namespace LibtorrentDotNet
 		/// <param name="torrentId">The unique identifier of the torrent.</param>
 		/// <param name="name">The name of the torrent.</param>
 		/// <param name="status">The current status of the torrent.</param>
-		/// <param name="torrentFiles">A list of files in the torrent.</param>
+		/// <param name="torrentFileEntries">A list of files in the torrent.</param>
 		/// <param name="totalSize">The total size of all files in the torrent, in bytes.</param>
 		/// <param name="savePath">The path to where the downloaded torrent file(s) are saved.</param>
 		TorrentInfo(
 			TorrentId^ torrentId,
 			String^ name,
 			TorrentStatus^ status,
-			IReadOnlyList<TorrentFile^>^ torrentFiles,
+			IReadOnlyList<TorrentFileEntry^>^ torrentFileEntries,
 			const Int64 totalSize,
-			String^ savePath) : torrentId(torrentId), name(name), savePath(savePath), status(status), torrentFiles(torrentFiles), totalSize(totalSize) {}
+			String^ savePath) : torrentId(torrentId), name(name), savePath(savePath), status(status), torrentFileEntries(torrentFileEntries), totalSize(totalSize) {}
 
 		/// <summary>
 		/// Gets the unique identifier of the torrent.
@@ -55,7 +55,7 @@ namespace LibtorrentDotNet
 		/// <summary>
 		/// Gets the files downloaded by the torrent.
 		/// </summary>
-		property IReadOnlyList<TorrentFile^>^ TorrentFiles { IReadOnlyList<TorrentFile^>^ get() { return torrentFiles; } }
+		property IReadOnlyList<TorrentFileEntry^>^ TorrentFileEntries { IReadOnlyList<TorrentFileEntry^>^ get() { return torrentFileEntries; } }
 
 		/// <summary>
 		/// Gets the path to where the downloaded torrent file(s) are saved.
@@ -67,7 +67,7 @@ namespace LibtorrentDotNet
 		String^ name;
 		String^ savePath;
 		TorrentStatus^ status;
-		IReadOnlyList<TorrentFile^>^ torrentFiles;
+		IReadOnlyList<TorrentFileEntry^>^ torrentFileEntries;
 		Int64 totalSize;
 	};
 }

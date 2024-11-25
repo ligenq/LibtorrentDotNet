@@ -1,7 +1,7 @@
 #pragma once
 
 #pragma managed(push, off)
-#include <cstring>    
+#include <cstring>
 #include <exception>
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/alert_types.hpp>
@@ -25,10 +25,11 @@
 #include "TorrentId.h"
 #include "TorrentStatus.h"
 #include "TorrentInfo.h"
-#include "TorrentFile.h"
+#include "TorrentFileEntry.h"
 #include "TorrentSessionConfig.h"
 #include "AddTorrentRequest.h"
 #include "TorrentEvents.h"
+#include "TorrentStream.h"
 
 using namespace System;
 using namespace msclr::interop;
@@ -129,6 +130,40 @@ namespace LibtorrentDotNet
 		virtual bool RemoveTorrents(IReadOnlyList<TorrentId^>^ torrentIds, bool deleteFiles) = 0;
 
 		/// <summary>
+		/// Streams a specific file from a torrent identified by its ID.
+		/// </summary>
+		/// <param name="torrentId">
+		/// The unique identifier of the torrent containing the file to stream. 
+		/// This should match the info hash of the desired torrent.
+		/// </param>
+		/// <param name="fileIndex">
+		/// The index of the file within the torrent to stream, see <see cref="TorrentFileEntry.FileIndex"/>. 
+		/// The file must exist in the torrent's metadata.
+		/// </param>
+		/// <param name="timeout">
+		/// The timeframe which a read operation of the stream must complete within before the stream's read method 
+		/// returns 0 and the event <see cref="TorrentStream.ReadTimeout"/> is raised.
+		/// </param>
+		/// <returns>
+		/// <see cref="TorrentStream"/> object that allows reading the specified file as a stream.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if the specified torrent ID is invalid or the file name is not found in the torrent metadata.
+		/// </exception>
+		/// <exception cref="InvalidOperationException">
+		/// Thrown if the torrent's metadata is not yet available or the torrent is in an invalid state.
+		/// </exception>
+		/// <exception cref="FileNotFoundException">
+		/// Thrown if the <param name="fileName"/> does not match any file in the torrent.
+		/// </exception>
+		/// <remarks>
+		/// This method finds the torrent by its ID in the session and locates the file within the torrent's metadata.
+		/// The returned stream allows sequential reading of the file. Ensure the torrent is actively downloading or seeding
+		/// for optimal streaming performance.
+		/// </remarks>
+		virtual TorrentStream^ StreamFile(TorrentId^ torrentId, int fileIndex, TimeSpan timeout) = 0;
+
+		/// <summary>
 		/// Sets the download rate limit for a specific torrent.
 		/// </summary>
 		/// <param name="torrentId">The unique identifier of the torrent.</param>
@@ -185,21 +220,26 @@ namespace LibtorrentDotNet
 	public ref class TorrentSession sealed : public ITorrentSession
 	{
 		libtorrent::session* nativeSession;
-		Threading::ReaderWriterLockSlim^ lock;
+		ReaderWriterLockSlim^ lock;
 		ElapsedEventHandler^ elapsedEventHandler;
-		Timer^ alertTimer;
+		Timers::Timer^ alertTimer;
 		bool isListeningToAlerts;
 		ILogger^ logger;
+
 		ref class NullLogger sealed : ILogger
 		{
 		public:
-			virtual void Log(ILogger::LogLevel level, String^ message) {}
+			virtual void Log(ILogger::LogLevel level, String^ message)
+			{
+			}
 		};
 
 		// Private constructor to prevent direct instantiation
-		TorrentSession() {}
-	public:
+		TorrentSession()
+		{
+		}
 
+	public:
 		/// <summary>
 		/// Event that is raised when a torrent operation (add, finish, pause, resume) occurs.
 		/// </summary>
@@ -276,7 +316,8 @@ namespace LibtorrentDotNet
 			}
 			catch (Exception^ ex)
 			{
-				Diagnostics::Trace::WriteLine(String::Format("Exception in TorrentSession destructor: {0}", ex->Message));
+				Diagnostics::Trace::WriteLine(
+					String::Format("Exception in TorrentSession destructor: {0}", ex->Message));
 			}
 		}
 
@@ -338,11 +379,13 @@ namespace LibtorrentDotNet
 				params = libtorrent::parse_magnet_uri(magnetLink, ec);
 				if (ec)
 				{
-					throw gcnew TorrentException(String::Format("Failed to parse magnet link: {0}", gcnew String(ec.message().c_str())));
+					throw gcnew TorrentException(
+						String::Format("Failed to parse magnet link: {0}", gcnew String(ec.message().c_str())));
 				}
 				params.save_path = savePath;
 
-				if (const libtorrent::sha1_hash infoHash = params.info_hashes.get_best(); nativeSession->find_torrent(infoHash).is_valid())
+				if (const libtorrent::sha1_hash infoHash = params.info_hashes.get_best(); nativeSession->
+					find_torrent(infoHash).is_valid())
 				{
 					logger->Log(ILogger::LogLevel::Info, "Torrent already exists, skipping addition");
 					return false;
@@ -540,6 +583,65 @@ namespace LibtorrentDotNet
 			ArgumentNullException::ThrowIfNull(torrentIds, "torrentIds");
 
 			return PerformTorrentOperation(torrentIds, TorrentOperation::Remove, deleteFiles);
+		}
+
+		/// <summary>
+		/// Streams a specific file from a torrent identified by its ID.
+		/// </summary>
+		/// <param name="torrentId">
+		/// The unique identifier of the torrent containing the file to stream. 
+		/// This should match the info hash of the desired torrent.
+		/// </param>
+		/// <param name="fileIndex">
+		/// The index of the file within the torrent to stream. 
+		/// The file must exist in the torrent's metadata.
+		/// </param>
+		/// <param name="timeout">
+		/// The timeframe which a read operation of the stream must complete within before the stream's read method 
+		/// returns 0 and the event <see cref="TorrentStream.ReadTimeout"/> is raised.
+		/// </param>
+		/// <returns>
+		/// <see cref="TorrentStream"/> object that allows reading the specified file as a stream.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if the specified torrent ID is invalid or the file name is not found in the torrent metadata.
+		/// </exception>
+		/// <exception cref="InvalidOperationException">
+		/// Thrown if the torrent's metadata is not yet available or the torrent is in an invalid state.
+		/// </exception>
+		/// <exception cref="FileNotFoundException">
+		/// Thrown if the <param name="fileName"/> does not match any file in the torrent.
+		/// </exception>
+		/// <remarks>
+		/// This method finds the torrent by its ID in the session and locates the file within the torrent's metadata.
+		/// The returned stream allows sequential reading of the file. Ensure the torrent is actively downloading or seeding
+		/// for optimal streaming performance.
+		/// </remarks>
+		virtual TorrentStream^ StreamFile(TorrentId^ torrentId, int fileIndex, TimeSpan timeout)
+		{
+			const auto& infoHash = ParseInfoHash(torrentId);
+			const auto& handle = nativeSession->find_torrent(infoHash.get_best());
+
+			if (!handle.is_valid())
+			{
+				throw gcnew ArgumentException("Invalid TorrentId");
+			}
+
+			const auto& torrentInfo = handle.torrent_file();
+			if (!torrentInfo)
+			{
+				throw gcnew InvalidOperationException("Torrent metadata not available yet");
+			}
+
+			const auto& files = torrentInfo->files();
+			const auto nativeFileIndex = libtorrent::file_index_t{ fileIndex };
+
+			if (!(fileIndex >= 0 && fileIndex < files.num_files()))
+			{
+				throw gcnew FileNotFoundException("Found no file with index " + fileIndex);
+			}
+
+			return TorrentStream::Create(new libtorrent::torrent_handle(handle), nativeFileIndex, timeout);
 		}
 
 		/// <summary>
@@ -755,7 +857,7 @@ namespace LibtorrentDotNet
 			}
 
 			nativeSession = new libtorrent::session();
-			lock = gcnew Threading::ReaderWriterLockSlim();
+			lock = gcnew ReaderWriterLockSlim();
 			isListeningToAlerts = false;
 
 			if (config->HasValue)
@@ -777,7 +879,7 @@ namespace LibtorrentDotNet
 			}
 
 			elapsedEventHandler = gcnew ElapsedEventHandler(this, &TorrentSession::OnAlertTimerElapsed);
-			alertTimer = gcnew Timer(1000);
+			alertTimer = gcnew Timers::Timer(1000);
 			alertTimer->AutoReset = true;
 			alertTimer->Elapsed += elapsedEventHandler;
 			isListeningToAlerts = false;
@@ -800,12 +902,13 @@ namespace LibtorrentDotNet
 			alertTimer->Stop();
 		}
 
-		bool PerformTorrentOperation(IReadOnlyList<TorrentId^>^ torrentIds, const TorrentOperation operation, const bool deleteFiles)
+		bool PerformTorrentOperation(IReadOnlyList<TorrentId^>^ torrentIds, const TorrentOperation operation,
+			const bool deleteFiles)
 		{
 			ArgumentNullException::ThrowIfNull(torrentIds, "torrentIds");
 
 			std::unordered_set<libtorrent::info_hash_t> infoHashSet;
-			for each (TorrentId ^ torrentId in torrentIds)
+			for each(TorrentId ^ torrentId in torrentIds)
 			{
 				infoHashSet.insert(ParseInfoHash(torrentId));
 			}
@@ -883,11 +986,13 @@ namespace LibtorrentDotNet
 
 				if (config->ListenInterfaces->HasValue)
 				{
-					settings.set_str(libtorrent::settings_pack::listen_interfaces, context.marshal_as<std::string>(config->ListenInterfaces->Value));
+					settings.set_str(libtorrent::settings_pack::listen_interfaces,
+						context.marshal_as<std::string>(config->ListenInterfaces->Value));
 				}
 				if (config->OutgoingInterfaces->HasValue)
 				{
-					settings.set_str(libtorrent::settings_pack::outgoing_interfaces, context.marshal_as<std::string>(config->OutgoingInterfaces->Value));
+					settings.set_str(libtorrent::settings_pack::outgoing_interfaces,
+						context.marshal_as<std::string>(config->OutgoingInterfaces->Value));
 				}
 				if (config->EnableUpnp->HasValue)
 				{
@@ -911,15 +1016,18 @@ namespace LibtorrentDotNet
 				}
 				if (config->BandwidthSettings->MaxConnections)
 				{
-					settings.set_int(libtorrent::settings_pack::connections_limit, config->BandwidthSettings->MaxConnections->Value);
+					settings.set_int(libtorrent::settings_pack::connections_limit,
+						config->BandwidthSettings->MaxConnections->Value);
 				}
 				if (config->BandwidthSettings->DownloadRateLimit->HasValue)
 				{
-					settings.set_int(libtorrent::settings_pack::download_rate_limit, config->BandwidthSettings->DownloadRateLimit->Value);
+					settings.set_int(libtorrent::settings_pack::download_rate_limit,
+						config->BandwidthSettings->DownloadRateLimit->Value);
 				}
 				if (config->BandwidthSettings->UploadRateLimit->HasValue)
 				{
-					settings.set_int(libtorrent::settings_pack::upload_rate_limit, config->BandwidthSettings->UploadRateLimit->Value);
+					settings.set_int(libtorrent::settings_pack::upload_rate_limit,
+						config->BandwidthSettings->UploadRateLimit->Value);
 				}
 				if (config->ProxySettings->ProxyType != None)
 				{
@@ -927,15 +1035,18 @@ namespace LibtorrentDotNet
 
 					if (config->ProxySettings->Host->HasValue)
 					{
-						settings.set_str(libtorrent::settings_pack::proxy_hostname, context.marshal_as<std::string>(config->ProxySettings->Host->Value));
+						settings.set_str(libtorrent::settings_pack::proxy_hostname,
+							context.marshal_as<std::string>(config->ProxySettings->Host->Value));
 					}
 					if (config->ProxySettings->Username->HasValue)
 					{
-						settings.set_str(libtorrent::settings_pack::proxy_username, context.marshal_as<std::string>(config->ProxySettings->Username->Value));
+						settings.set_str(libtorrent::settings_pack::proxy_username,
+							context.marshal_as<std::string>(config->ProxySettings->Username->Value));
 					}
 					if (config->ProxySettings->Password->HasValue)
 					{
-						settings.set_str(libtorrent::settings_pack::proxy_password, context.marshal_as<std::string>(config->ProxySettings->Password->Value));
+						settings.set_str(libtorrent::settings_pack::proxy_password,
+							context.marshal_as<std::string>(config->ProxySettings->Password->Value));
 					}
 					if (config->ProxySettings->Port->HasValue)
 					{
@@ -957,13 +1068,15 @@ namespace LibtorrentDotNet
 		{
 			marshal_context context;
 
-			if (const auto& hashStr = context.marshal_as<std::string>(torrentId->ToString()); hashStr.length() == 40 || hashStr.length() == 64)
+			if (const auto& hashStr = context.marshal_as<std::string>(torrentId->ToString()); hashStr.length() == 40 ||
+				hashStr.length() == 64)
 			{
 				const size_t hashSize = hashStr.length() / 2;
 				std::vector<char> hashBytes(hashSize);
 				for (int i = 0; i < hashSize; i++)
 				{
-					hashBytes[i] = static_cast<char>(std::stoi(hashStr.substr(static_cast<std::basic_string<char>::size_type>(i) * 2, 2), nullptr, 16));
+					hashBytes[i] = static_cast<char>(std::stoi(
+						hashStr.substr(static_cast<std::basic_string<char>::size_type>(i) * 2, 2), nullptr, 16));
 				}
 
 				if (hashStr.length() == 40)
@@ -1043,29 +1156,28 @@ namespace LibtorrentDotNet
 			TorrentStatus^ managedStatus = CreateTorrentStatus(status, torrentId);
 			UInt64 totalSize = 0;
 
-			List<TorrentFile^>^ files;
+			List<TorrentFileEntry^>^ fileEntries;
 			if (handle.torrent_file())
 			{
-				files = gcnew List<TorrentFile^>(handle.torrent_file()->num_files());
+				fileEntries = gcnew List<TorrentFileEntry^>(handle.torrent_file()->num_files());
 
-				for (const auto& index : handle.torrent_file()->files().file_range())
+				for (const auto& torrentFile = handle.torrent_file(); const auto& index : torrentFile->files().file_range())
 				{
-					const auto& torrentFile = handle.torrent_file();
 					const auto& path = gcnew String(torrentFile->files().file_path(index, status.save_path).c_str());
 					const auto& filename = gcnew String(torrentFile->files().file_name(index).to_string().c_str());
 					const auto& size = torrentFile->files().file_size(index);
 
-					files->Add(gcnew TorrentFile(path, filename, size));
+					fileEntries->Add(gcnew TorrentFileEntry(static_cast<int>(index), path, filename, size));
 				}
 
 				totalSize = handle.torrent_file()->total_size();
 			}
 			else
 			{
-				files = gcnew List<TorrentFile^>(0);
+				fileEntries = gcnew List<TorrentFileEntry^>(0);
 			}
 
-			return gcnew TorrentInfo(torrentId, name, managedStatus, files, totalSize, savePath);
+			return gcnew TorrentInfo(torrentId, name, managedStatus, fileEntries, totalSize, savePath);
 		}
 
 		void OnAlertTimerElapsed(Object^ sender, ElapsedEventArgs^ e)
@@ -1102,32 +1214,39 @@ namespace LibtorrentDotNet
 				if (const auto* addAlert = libtorrent::alert_cast<libtorrent::add_torrent_alert>(alert))
 				{
 					TorrentId^ torrentId = InfoHashToTorrentId(addAlert->handle.info_hashes());
-					TorrentOperationChanged(this, gcnew TorrentOperationEventArgs(torrentId, TorrentOperationEvent::Added));
+					TorrentOperationChanged(
+						this, gcnew TorrentOperationEventArgs(torrentId, TorrentOperationEvent::Added));
 				}
 				else if (const auto* finishAlert = libtorrent::alert_cast<libtorrent::torrent_finished_alert>(alert))
 				{
 					TorrentId^ torrentId = InfoHashToTorrentId(finishAlert->handle.info_hashes());
-					TorrentOperationChanged(this, gcnew TorrentOperationEventArgs(torrentId, TorrentOperationEvent::Finished));
+					TorrentOperationChanged(
+						this, gcnew TorrentOperationEventArgs(torrentId, TorrentOperationEvent::Finished));
 				}
 				else if (const auto* removeAlert = libtorrent::alert_cast<libtorrent::torrent_removed_alert>(alert))
 				{
 					TorrentId^ torrentId = InfoHashToTorrentId(removeAlert->handle.info_hashes());
-					TorrentOperationChanged(this, gcnew TorrentOperationEventArgs(torrentId, TorrentOperationEvent::Removed));
+					TorrentOperationChanged(
+						this, gcnew TorrentOperationEventArgs(torrentId, TorrentOperationEvent::Removed));
 				}
 				else if (const auto* errorAlert = libtorrent::alert_cast<libtorrent::torrent_error_alert>(alert))
 				{
 					TorrentId^ torrentId = InfoHashToTorrentId(errorAlert->handle.info_hashes());
-					TorrentError(this, gcnew TorrentErrorEventArgs(torrentId, gcnew String(errorAlert->error.message().c_str())));
+					TorrentError(
+						this, gcnew TorrentErrorEventArgs(
+							torrentId, gcnew String(errorAlert->error.message().c_str())));
 				}
 				else if (const auto* pauseAlert = libtorrent::alert_cast<libtorrent::torrent_paused_alert>(alert))
 				{
 					TorrentId^ torrentId = InfoHashToTorrentId(pauseAlert->handle.info_hashes());
-					TorrentOperationChanged(this, gcnew TorrentOperationEventArgs(torrentId, TorrentOperationEvent::Paused));
+					TorrentOperationChanged(
+						this, gcnew TorrentOperationEventArgs(torrentId, TorrentOperationEvent::Paused));
 				}
 				else if (const auto* resumeAlert = libtorrent::alert_cast<libtorrent::torrent_resumed_alert>(alert))
 				{
 					TorrentId^ torrentId = InfoHashToTorrentId(resumeAlert->handle.info_hashes());
-					TorrentOperationChanged(this, gcnew TorrentOperationEventArgs(torrentId, TorrentOperationEvent::Resumed));
+					TorrentOperationChanged(
+						this, gcnew TorrentOperationEventArgs(torrentId, TorrentOperationEvent::Resumed));
 				}
 				else if (const auto* stateAlert = libtorrent::alert_cast<libtorrent::state_update_alert>(alert))
 				{
