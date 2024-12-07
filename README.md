@@ -57,7 +57,7 @@ class Program
 
 ## Requirements
 
-- .NET 8
+- .NET 9
 - Windows 10 and later, x64 only
 
 ## Building
@@ -65,7 +65,7 @@ class Program
 Before building the solution, ensure that you have the following installed:
 
 - [vcpkg](https://vcpkg.io/en/)
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - Visual Studio 2022 (or your preferred IDE) with the following components:
   - .NET desktop development workload
   - Desktop development with C++ workload
