@@ -27,9 +27,6 @@
     <ClCompile Include="TorrentEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TorrentFile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TorrentId.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -60,6 +57,9 @@
     <ClCompile Include="TorrentStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TorrentFileEntry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc">
@@ -73,9 +73,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TorrentEvents.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TorrentFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TorrentId.h">
@@ -112,6 +109,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TorrentStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TorrentFileEntry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

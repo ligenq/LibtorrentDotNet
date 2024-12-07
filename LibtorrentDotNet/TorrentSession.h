@@ -137,12 +137,11 @@ namespace LibtorrentDotNet
 		/// This should match the info hash of the desired torrent.
 		/// </param>
 		/// <param name="fileIndex">
-		/// The index of the file within the torrent to stream, see <see cref="TorrentFileEntry.FileIndex"/>. 
-		/// The file must exist in the torrent's metadata.
+		/// The index of the file within the torrent to stream.
 		/// </param>
 		/// <param name="timeout">
 		/// The timeframe which a read operation of the stream must complete within before the stream's read method 
-		/// returns 0 and the event <see cref="TorrentStream.ReadTimeout"/> is raised.
+		/// returns 0 and a read timeout event is raised.
 		/// </param>
 		/// <returns>
 		/// <see cref="TorrentStream"/> object that allows reading the specified file as a stream.
@@ -154,7 +153,7 @@ namespace LibtorrentDotNet
 		/// Thrown if the torrent's metadata is not yet available or the torrent is in an invalid state.
 		/// </exception>
 		/// <exception cref="FileNotFoundException">
-		/// Thrown if the <param name="fileName"/> does not match any file in the torrent.
+		/// Thrown if the <param name="fileIndex"/> does not match any file in the torrent.
 		/// </exception>
 		/// <remarks>
 		/// This method finds the torrent by its ID in the session and locates the file within the torrent's metadata.
@@ -593,12 +592,11 @@ namespace LibtorrentDotNet
 		/// This should match the info hash of the desired torrent.
 		/// </param>
 		/// <param name="fileIndex">
-		/// The index of the file within the torrent to stream. 
-		/// The file must exist in the torrent's metadata.
+		/// The index of the file within the torrent to stream.
 		/// </param>
 		/// <param name="timeout">
 		/// The timeframe which a read operation of the stream must complete within before the stream's read method 
-		/// returns 0 and the event <see cref="TorrentStream.ReadTimeout"/> is raised.
+		/// returns 0 and a read timeout event is raised.
 		/// </param>
 		/// <returns>
 		/// <see cref="TorrentStream"/> object that allows reading the specified file as a stream.
@@ -610,7 +608,7 @@ namespace LibtorrentDotNet
 		/// Thrown if the torrent's metadata is not yet available or the torrent is in an invalid state.
 		/// </exception>
 		/// <exception cref="FileNotFoundException">
-		/// Thrown if the <param name="fileName"/> does not match any file in the torrent.
+		/// Thrown if the <param name="fileIndex"/> does not match any file in the torrent.
 		/// </exception>
 		/// <remarks>
 		/// This method finds the torrent by its ID in the session and locates the file within the torrent's metadata.

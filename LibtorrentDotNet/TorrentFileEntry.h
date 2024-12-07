@@ -13,7 +13,7 @@ namespace LibtorrentDotNet
 		/// <summary>
 		/// Initializes a new instance of the TorrentFileEntry class.
 		/// </summary>
-		/// <param name="id">The index of the file.</param>
+		/// <param name="fileIndex">The index of the file.</param>
 		/// <param name="path">The full path of the file.</param>
 		/// <param name="name">The name of the file.</param>
 		/// <param name="size">The size of the file in bytes.</param>
